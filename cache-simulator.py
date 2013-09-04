@@ -179,9 +179,11 @@ def readBias(intersizeFile, addressFile):
          count = line.count(",")
          if count > 0:
             word = string.split(line, " ")
-            tmplist.append(int(string.split((string.split(word[0], '[')[1], ",")[0])))
+            tempcoma = string.split(word[0], "[")
+            tempaddress = string.split(tempcoma[1], ",")[0]
+            tmplist.append(int(tempaddress))
             for n in range(1, count):
-               tmplist.append(int(word[n]))
+               tmplist.append(int(string.split(word[n], ",")[0]))
             temp = string.split(word[count], ']')
             tmplist.append(int(temp[0]))
             interlist.append(tmplist)
