@@ -148,22 +148,22 @@ class Cache:
          return self.getLRUBlock((set*g.N_WAY, (set*g.N_WAY)+g.N_WAY))
 
 # -----------------------------------------------------------------------------
-def readReference(inFile, lineNum):
-   """
-   Get specified line from input file. The incoming line is
-   split into subfields, only two of which are returned. If
-   the line does not exist in the file, a zero tuple is
-   returned to indicate failure.
-   """
-   line = linecache.getline(inFile, lineNum)
-   if line != '':
-      try:
-         (rw, addressHex, size) = string.splitfields(line, " ")
-         return (rw, int(addressHex, 0))
-      except:
-         sys.exit("Trace file format: RW-type(0/1) Address Size")
-   else:
-      return (0, 0)
+# def readReference(inFile, lineNum):
+#    """
+#    Get specified line from input file. The incoming line is
+#    split into subfields, only two of which are returned. If
+#    the line does not exist in the file, a zero tuple is
+#    returned to indicate failure.
+#    """
+#    line = linecache.getline(inFile, lineNum)
+#    if line != '':
+#       try:
+#          (rw, addressHex, size) = string.splitfields(line, " ")
+#          return (rw, int(addressHex, 0))
+#       except:
+#          sys.exit("Trace file format: RW-type(0/1) Address Size")
+#    else:
+#       return (0, 0)
 
 # -----------------------------------------------------------------------------
 def readBias(intersizeFile, addressFile):
@@ -240,7 +240,7 @@ def printSummary():
    elif g.writeStrat == 2:
       write = "Write back"
 
-   print "o--------------------------o"
+   print "o----------------------------------------------o"
    print "|           Input file:", g.inFile
    print "|       Intersize file:", g.intersizeFile
    print "|         Address file:", g.addressFile
@@ -251,7 +251,7 @@ def printSummary():
    print "|           Total hits:", g.hit
    print "|         Total misses:", g.miss
    print "| Most BIAS cache line:", max(g.biaslist)
-   print "o--------------------------o"
+   print "o----------------------------------------------o"
 
 # =============================================================================
 # Everything starts from here
@@ -282,23 +282,25 @@ def main():
    # read the bias objects along with occurance index
    g.biasdict = readBias(g.intersizeFile, g.addressFile)
 
+
+   fp = open(g.inFile, "r")
    # Core logic
-   while 1:
-      # Get references --------------------------------------------------------
-      (rw, address) = readReference(g.inFile, line)
-      line += 1
+   for line in fp:
+      # Get reference ----------------------------------------------------------
+      word = string.split(line, " ")
+      rw = word[0]
+      address = int(word[1], 0)
       temp = cnt
-      if address == 0:
-         break # EOF, so shut down
 
       # For speed, make these function calls once so
       # we can just test the return values
       cacheHit = g.cache.checkCacheHit(address)
 
       if address in g.biasdict:
-         if g.biasdict[address] > 0:
+         if g.biasdict[address] != 0:
             g.biasdict[address] -= 1
          else:
+            g.biasdict[address] -= 1
             cnt += 1
          #   del g.biasdict[address]
 
@@ -347,9 +349,10 @@ def main():
                g.cycles += 1
                g.cache.setDirtyFlag(address)
 
-   # Update the BIAS cache line list
-   if temp != cnt:
-      g.biaslist.append(cnt)
+      # Update the BIAS cache line list
+      if temp != cnt:
+         g.biaslist.append(cnt)
+   fp.close()
    # Display results of program run
    printSummary()
 
