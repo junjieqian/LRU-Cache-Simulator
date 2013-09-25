@@ -125,7 +125,7 @@ int stoi(string str){
     return res;
 }
 
-int readBias(string intersizefile, string addressfile, unordered_map<long,int> &biasdict){
+int readBias(string &intersizefile, string &addressfile, unordered_map<long,int> &biasdict){
     ifstream infile(addressfile);
     if (!infile.is_open()){
         cout << "No address file exist!\n";
@@ -152,7 +152,7 @@ int readBias(string intersizefile, string addressfile, unordered_map<long,int> &
         int size = 0;
         int cnt=0;
         while(end=line.find(',',end)){
-            string sub = line.sutbstr(start, end-start+1);
+            string sub = line.substr(start, end-start+1);
             size = stoi(sub);
             start=end;
             if (size>8388608){
@@ -174,6 +174,8 @@ void helper(){
     cout << "Commented the corresponding lines out, if parameters are assigned in CMDLine\n";
 }
 
+typedef unordered_map<long, int> biasdict;
+
 // everything starts from here
 int main(int argc, char ** argv){
     if (argc<5){
@@ -184,10 +186,10 @@ int main(int argc, char ** argv){
     string tracefile     = *(argv+1);
     string addressfile   = *(argv+2);
     string intersizefile = *(argv+3);
-    long cnt              = 0;  // count the cache lines having bias objects
+    int writeStrat       = 2;  // write back strategy
+    long cnt             = 0;  // count the cache lines having bias objects
     vector<long> count;         // vector used to store the cnt
 
-    unordered_map<long, int> biasdict;
     if(!readBias(intersizefile, addressfile, biasdict)){
         cout << "Failed to read the bias\n";
         helper();
